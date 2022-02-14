@@ -12,10 +12,12 @@ using Microsoft.OpenApi.Models;
 using Skoruba.AuditLogging.EntityFramework.Entities;
 using Skoruba.IdentityServer4.Admin.Api.Configuration;
 using Skoruba.IdentityServer4.Admin.Api.Configuration.Authorization;
+using Skoruba.IdentityServer4.Admin.Api.Configuration.Database;
 using Skoruba.IdentityServer4.Admin.Api.ExceptionHandling;
 using Skoruba.IdentityServer4.Admin.Api.Helpers;
 using Skoruba.IdentityServer4.Admin.Api.Mappers;
 using Skoruba.IdentityServer4.Admin.Api.Resources;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Configuration.Configuration;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.Shared.Configuration.Helpers;
@@ -42,8 +44,21 @@ namespace Skoruba.IdentityServer4.Admin.Api
             var adminApiConfiguration = Configuration.GetSection(nameof(AdminApiConfiguration)).Get<AdminApiConfiguration>();
             services.AddSingleton(adminApiConfiguration);
 
+            var providerConfig = Configuration.GetSection(nameof(DatabaseProviderConfiguration)).Get<DatabaseProviderConfiguration>();
+            var databaseMigrationsConfiguration = Configuration.GetSection(nameof(DatabaseMigrationsConfiguration)).Get<DatabaseMigrationsConfiguration>();
+            // services.AddSingleton(databaseMigrationsConfiguration);
+
+            var migrationsAssembly = MigrationAssemblyConfiguration.GetMigrationAssemblyByProvider(providerConfig);
+            databaseMigrationsConfiguration.SetMigrationsAssemblies(migrationsAssembly);
+
+            var identityServerData = Configuration.GetSection(nameof(IdentityServerData)).Get<IdentityServerData>();
+            var identityData = Configuration.GetSection(nameof(IdentityData)).Get<IdentityData>();
+            services.AddSingleton(identityServerData);
+            services.AddSingleton(identityData);
+
+
             // Add DbContexts
-            RegisterDbContexts(services);
+            RegisterDbContexts(services, databaseMigrationsConfiguration);
 
             services.AddDataProtection<IdentityServerDataProtectionDbContext>(Configuration);
 
@@ -143,9 +158,9 @@ namespace Skoruba.IdentityServer4.Admin.Api
             });
         }
 
-        public virtual void RegisterDbContexts(IServiceCollection services)
+        public virtual void RegisterDbContexts(IServiceCollection services, DatabaseMigrationsConfiguration databaseMigrations)
         {
-            services.AddDbContexts<AdminIdentityDbContext, IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminLogDbContext, AdminAuditLogDbContext, IdentityServerDataProtectionDbContext, AuditLog>(Configuration);
+            services.AddDbContexts<AdminIdentityDbContext, IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, AdminLogDbContext, AdminAuditLogDbContext, IdentityServerDataProtectionDbContext, AuditLog>(Configuration, databaseMigrations);
         }
 
         public virtual void RegisterAuthentication(IServiceCollection services)
