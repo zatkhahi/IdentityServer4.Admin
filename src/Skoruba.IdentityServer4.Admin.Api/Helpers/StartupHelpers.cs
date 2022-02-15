@@ -255,6 +255,7 @@ namespace Skoruba.IdentityServer4.Admin.Api.Helpers
                                 (c.Type == $"client_{JwtClaimTypes.Role}" && c.Value == adminApiConfiguration.AdministrationRole))
                             ) && context.User.HasClaim(c => c.Type == JwtClaimTypes.Scope && c.Value == adminApiConfiguration.OidcApiName)
                         ));
+                options.AddPolicy("AdminApi", policy => policy.RequireClaim("scope", adminApiConfiguration.OidcApiName));
             });
         }
 
