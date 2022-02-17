@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace Skoruba.IdentityServer4.Admin.Api
 
         public static async Task Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fa-IR");
             var configuration = GetConfiguration(args);
 
             Log.Logger = new LoggerConfiguration()

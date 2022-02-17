@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using IdentityModel;
 using IdentityServer4.EntityFramework.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -6,6 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +24,7 @@ using Skoruba.IdentityServer4.Admin.Api.Configuration;
 using Skoruba.IdentityServer4.Admin.Api.Configuration.ApplicationParts;
 using Skoruba.IdentityServer4.Admin.Api.Configuration.Constants;
 using Skoruba.IdentityServer4.Admin.Api.Helpers.Localization;
+using Skoruba.IdentityServer4.Admin.Api.Resources;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Dtos.Identity;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Configuration.Configuration;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Configuration.MySql;
@@ -110,8 +115,11 @@ namespace Skoruba.IdentityServer4.Admin.Api.Helpers
 
             services.TryAddTransient(typeof(IGenericControllerLocalizer<>), typeof(GenericControllerLocalizer<>));
 
-            services.AddControllersWithViews(o => { o.Conventions.Add(new GenericControllerRouteConvention()); })
-                .AddDataAnnotationsLocalization()
+            services.AddControllersWithViews(o => { o.Conventions.Add(new GenericControllerRouteConvention()); })                
+                 .AddViewLocalization(
+                    LanguageViewLocationExpanderFormat.Suffix,
+                    opts => { opts.ResourcesPath = ConfigurationConsts.ResourcesPath; })
+                 .AddDataAnnotationsLocalization()
                 .ConfigureApplicationPartManager(m =>
                 {
                     m.FeatureProviders.Add(
@@ -120,6 +128,22 @@ namespace Skoruba.IdentityServer4.Admin.Api.Helpers
                             TUsersDto, TRolesDto, TUserRolesDto, TUserClaimsDto,
                             TUserProviderDto, TUserProvidersDto, TUserChangePasswordDto, TRoleClaimsDto, TUserClaimDto, TRoleClaimDto>());
                 });
+
+            var supporterCultures = new List<CultureInfo>
+            {
+                    new CultureInfo("en"),
+                    new CultureInfo("fa")
+            };
+            services.Configure<RequestLocalizationOptions>(
+                opts =>
+                {
+                    opts.DefaultRequestCulture = new RequestCulture("fa");
+                    opts.SupportedCultures = supporterCultures;
+                    opts.SupportedUICultures = supporterCultures;
+                });
+
+            services.AddScoped<MultilanguageIdentityErrorDescriber>();
+            
         }
 
         /// <summary>
@@ -184,7 +208,8 @@ namespace Skoruba.IdentityServer4.Admin.Api.Helpers
             services
                 .AddIdentity<TUser, TRole>(options => configuration.GetSection(nameof(IdentityOptions)).Bind(options))
                 .AddEntityFrameworkStores<TIdentityDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddErrorDescriber<MultilanguageIdentityErrorDescriber>();
 
             services.AddAuthentication(options =>
                 {

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using HealthChecks.UI.Client;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -143,6 +145,15 @@ namespace Skoruba.IdentityServer4.Admin.Api
                 c.OAuthClientId(adminApiConfiguration.OidcSwaggerUIClientId);
                 c.OAuthAppName(adminApiConfiguration.ApiName);
                 c.OAuthUsePkce();
+            });
+
+            var supportedCultures = new[] { new CultureInfo("en"), new CultureInfo("fa") };
+            app.UseRequestLocalization(options =>
+            {
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+                options.DefaultRequestCulture = new RequestCulture(new CultureInfo("fa"));
+    
             });
 
             app.UseRouting();
