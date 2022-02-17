@@ -59,7 +59,13 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseCookiePolicy();
+            app.UseCookiePolicy(new CookiePolicyOptions()
+            {
+                Secure = Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest,
+                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always,
+                // MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.Lax,
+                MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.Strict,
+            });
 
             if (env.IsDevelopment())
             {
