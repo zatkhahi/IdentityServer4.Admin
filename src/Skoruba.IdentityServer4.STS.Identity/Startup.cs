@@ -76,6 +76,8 @@ namespace Skoruba.IdentityServer4.STS.Identity
                 app.UseHsts();
             }
 
+            app.UseMiddleware<CookieSet>();
+
             app.UsePathBase(Configuration.GetValue<string>("BasePath"));
 
             // Add custom security headers
