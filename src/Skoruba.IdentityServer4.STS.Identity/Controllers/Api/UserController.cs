@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DNTCaptcha.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers.Api
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword(ChangePasswordCommand command)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest("داده های ارسال شده صحیح نیست");
             }
@@ -50,6 +51,16 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers.Api
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+
+        [HttpPost("Test")]
+        public IActionResult Test([FromServices] IDNTCaptchaValidatorService validatorService)
+        {
+            if (!validatorService.HasRequestValidCaptchaEntry(Language.English, DisplayMode.SumOfTwoNumbersToWords))
+            {
+                return BadRequest("Invalid captcha");
+            }
+            return Ok();
         }
     }
 }
