@@ -25,9 +25,12 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers.Localization
 
             var type = typeof(TResourceSource);
             var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
-            var typeName = type.Name.Remove(type.Name.IndexOf('`'));
-            var baseName = (type.Namespace + "." + typeName).Substring(assemblyName.Length).Trim('.');
-
+            string baseName = type.Name;
+            if (type.Name.IndexOf('`') != -1)
+            {
+                var typeName = type.Name.Remove(type.Name.IndexOf('`'));
+                baseName = (type.Namespace + "." + typeName).Substring(assemblyName.Length).Trim('.');
+            }
             _localizer = factory.Create(baseName, assemblyName);
         }
 

@@ -30,6 +30,10 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Configuration.PostgreSQL;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Configuration.SqlServer;
 using Skoruba.IdentityServer4.Shared.Configuration.Authentication;
 using Skoruba.IdentityServer4.Shared.Configuration.Configuration.Identity;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace Skoruba.IdentityServer4.STS.Identity.Helpers
 {
@@ -251,7 +255,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                 .AddScoped<UserResolver<TUserIdentity>>()
                 .AddIdentity<TUserIdentity, TUserIdentityRole>(options => configuration.GetSection(nameof(IdentityOptions)).Bind(options))
                 .AddEntityFrameworkStores<TIdentityDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddErrorDescriber<MultilanguageIdentityErrorDescriber>();
 
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -269,7 +274,64 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                 iis.AutomaticAuthentication = false;
             });
 
-            var authenticationBuilder = services.AddAuthentication();
+            services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+               .Configure<IHttpContextAccessor>((options, contextAccessor) =>
+               {
+                   var request = contextAccessor.HttpContext.Request;
+                   var basePath = request.PathBase.Value ?? "";
+                   var issuer = $"{request.Scheme}://{request.Host}{basePath}";
+                   var logger = contextAccessor.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                   logger.LogInformation(issuer);
+                   //logger.LogInformation(request.Path);
+                   //logger.LogInformation(request.PathBase.Value ?? "");
+                   options.Authority = issuer;
+                   options.RequireHttpsMetadata = false;
+
+                   options.TokenValidationParameters = new TokenValidationParameters
+                   {
+                       NameClaimType = "name",
+                       RoleClaimType = "role",
+                       ValidateLifetime = true,
+                       //ValidateIssuer = true,
+                       //ValidateAudience = true
+                   };
+
+                   options.SaveToken = true;
+
+                   //services.
+                   options.TokenValidationParameters = new TokenValidationParameters
+                   {
+                       ValidateIssuer = true,
+                       ValidIssuer = issuer,
+                       ValidateLifetime = true,
+                       ValidateAudience = false,
+                       // TokenReplayValidator = new FingerprintClaimValidator(contextAccessor).TokenReplayValidator
+                   };
+                   options.MapInboundClaims = true;
+                   //options.Events = new JwtBearerEvents
+                   //{
+                   //    OnTokenValidated = async (ctx) =>
+                   //    {
+                   //        var userSub = ctx.Principal.Claims.ToList().Where(s => s.Type == ClaimTypes.NameIdentifier).FirstOrDefault();
+                   //        var dbContext = ctx.HttpContext.RequestServices.GetRequiredService<ICommonDbContext>();
+                   //        var user = await dbContext.Users.Where(s => s.OidcIdentifier == userSub.Value).FirstOrDefaultAsync();
+                   //        if (user == null)
+                   //        {
+                   //            var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                   //            logger.LogError($"OIDC User not found with sub: {userSub.Value}");
+                   //            return;
+                   //        }
+                   //        var claim = new Claim("uid", user.Id.ToString());
+                   //        var identity = new ClaimsIdentity(new[] { claim });
+                   //        ctx.Principal.AddIdentity(identity);
+                   //        ctx.HttpContext.User.AddIdentities(ctx.Principal.Identities);
+                   //    // return Task.CompletedTask;
+                   //}
+                   //};
+               });
+
+                var authenticationBuilder = services.AddAuthentication()
+                .AddJwtBearer();
 
             AddExternalProviders(authenticationBuilder, configuration);
         }

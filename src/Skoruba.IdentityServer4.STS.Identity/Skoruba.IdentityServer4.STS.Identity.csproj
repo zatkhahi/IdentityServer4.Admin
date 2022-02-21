@@ -56,6 +56,18 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Update="Resources\IdentityErrors.Designer.cs">
+        <DependentUpon>IdentityErrors.resx</DependentUpon>
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Resources\IdentityErrors.resx">
+        <LastGenOutput>IdentityErrors.Designer.cs</LastGenOutput>
+        <Generator>PublicResXFileCodeGenerator</Generator>
+      </EmbeddedResource>
       <EmbeddedResource Update="Resources\Views\Account\RegisterConfirmation.ru.resx">
         <Generator>ResXFileCodeGenerator</Generator>
       </EmbeddedResource>
