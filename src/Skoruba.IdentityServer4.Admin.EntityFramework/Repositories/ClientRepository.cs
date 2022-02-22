@@ -187,6 +187,16 @@ namespace Skoruba.IdentityServer4.Admin.EntityFramework.Repositories
             return await AutoSaveChangesAsync();
         }
 
+        public virtual async Task<int> UpdateClientPropertyAsync(ClientProperty clientProperty)
+        {
+            var clientPropertyEntity = await DbContext.ClientProperties.FindAsync(clientProperty.Id);
+            if (clientPropertyEntity == null)
+                throw new Exception($"ClientProperty {clientProperty.Id} not found");
+            clientPropertyEntity.Value = clientProperty.Value;
+
+            return await AutoSaveChangesAsync();
+        }
+
         public virtual async Task<(string ClientId, string ClientName)> GetClientIdAsync(int clientId)
         {
             var client = await DbContext.Clients.Where(x => x.Id == clientId)
@@ -247,6 +257,17 @@ namespace Skoruba.IdentityServer4.Admin.EntityFramework.Repositories
             pagedList.TotalCount = await DbContext.ClientProperties.Where(x => x.Client.Id == clientId).CountAsync();
             pagedList.PageSize = pageSize;
 
+            return pagedList;
+        }
+
+        public virtual async Task<PagedList<ClientProperty>> GetClientPropertiesByKeyAsync(int clientId, List<string> keys)
+        {         
+            var properties = await DbContext.ClientProperties.Where(x => x.Client.Id == clientId
+            && keys.Contains(x.Key)).ToListAsync();
+            var pagedList = new PagedList<ClientProperty>();
+            pagedList.Data.AddRange(properties);
+            pagedList.TotalCount = properties.Count;
+            pagedList.PageSize = 1;
             return pagedList;
         }
 

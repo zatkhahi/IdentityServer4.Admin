@@ -5,6 +5,10 @@ namespace Skoruba.IdentityServer4.Admin.EntityFramework.Configuration.Configurat
 {
     public class Client : global::IdentityServer4.Models.Client
     {
+        public Client()
+        {
+
+        }
         public List<Claim> ClientClaims { get; set; } = new List<Claim>();
     }
 }

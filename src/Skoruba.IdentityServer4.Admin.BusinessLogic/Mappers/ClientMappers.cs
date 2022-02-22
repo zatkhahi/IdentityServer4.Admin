@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using IdentityServer4.EntityFramework.Entities;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Dtos.Configuration;
@@ -75,6 +76,11 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Mappers
         public static ClientProperty ToEntity(this ClientPropertiesDto clientProperties)
         {
             return Mapper.Map<ClientProperty>(clientProperties);
+        }
+
+        public static ClientProperty ToEntity(this ClientPropertyDto clientProperty)
+        {
+            return Mapper.Map<ClientProperty>(clientProperty);
         }
 
         public static SelectItemDto ToModel(this SelectItem selectItem)

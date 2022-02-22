@@ -471,4 +471,16 @@
   <data name="SigningAlgorithms_Label" xml:space="preserve">
     <value>Allowed Identity Token Signing Algorithms</value>
   </data>
+  <data name="EnableLoginCaptcha_Info" xml:space="preserve">
+    <value>متن امنیتی برای ورود فعال باشد</value>
+  </data>
+  <data name="EnableLoginCaptcha_Label" xml:space="preserve">
+    <value>کپچا یا متن امنیتی ورود</value>
+  </data>
+  <data name="EnableTokenCookieFingerprint_Info" xml:space="preserve">
+    <value>با فعال کردن فینگرپرینت در کوکی، توکن تولید شده برای هر کاربر با کوکی مطابقت داده می شود و کاربر دیگر با داشتن توکن تنها دسترسی نخواهد داشت</value>
+  </data>
+  <data name="EnableTokenCookieFingerprint_Label" xml:space="preserve">
+    <value>فینگرپرینت توکن در کوکی</value>
+  </data>
 </root>

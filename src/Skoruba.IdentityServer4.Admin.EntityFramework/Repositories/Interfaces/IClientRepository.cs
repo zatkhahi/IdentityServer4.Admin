@@ -60,16 +60,19 @@ namespace Skoruba.IdentityServer4.Admin.EntityFramework.Repositories.Interfaces
 		Task<PagedList<ClientClaim>> GetClientClaimsAsync(int clientId, int page = 1, int pageSize = 10);
 
 	    Task<PagedList<ClientProperty>> GetClientPropertiesAsync(int clientId, int page = 1, int pageSize = 10);
+		Task<PagedList<ClientProperty>> GetClientPropertiesByKeyAsync(int clientId, List<string> keys);
 
-        Task<ClientClaim> GetClientClaimAsync(int clientClaimId);
+		Task<ClientClaim> GetClientClaimAsync(int clientClaimId);
 
 	    Task<ClientProperty> GetClientPropertyAsync(int clientPropertyId);
 
         Task<int> AddClientClaimAsync(int clientId, ClientClaim clientClaim);
 
 	    Task<int> AddClientPropertyAsync(int clientId, ClientProperty clientProperties);
+		Task<int> UpdateClientPropertyAsync(ClientProperty clientProperty);
 
-        Task<int> DeleteClientClaimAsync(ClientClaim clientClaim);
+
+		Task<int> DeleteClientClaimAsync(ClientClaim clientClaim);
 
 	    Task<int> DeleteClientPropertyAsync(ClientProperty clientProperty);
 

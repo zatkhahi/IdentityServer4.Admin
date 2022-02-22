@@ -119,5 +119,8 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Dtos.Configuration
         public List<string> AllowedIdentityTokenSigningAlgorithms { get; set; }
 
         public string AllowedIdentityTokenSigningAlgorithmsItems { get; set; }
+
+        public bool EnableLoginCaptcha { get; set; } = false;
+        public bool EnableTokenCookieFingerprint { get; set; } = true;
     }
 }
