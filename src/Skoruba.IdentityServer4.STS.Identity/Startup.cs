@@ -34,6 +34,10 @@ namespace Skoruba.IdentityServer4.STS.Identity
         {
             var rootConfiguration = CreateRootConfiguration();
             services.AddSingleton(rootConfiguration);
+
+            var advancedConfiguration = Configuration.GetSection(nameof(AdvancedConfiguration)).Get<AdvancedConfiguration>();
+            services.AddSTSApiCors(advancedConfiguration);
+
             // Register DbContexts for IdentityServer and Identity
             RegisterDbContexts(services);
 
@@ -89,6 +93,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
             app.UseStaticFiles();
             UseAuthentication(app);
+            app.UseCors();
             app.UseMvcLocalizationServices();
 
             app.UseRouting();
@@ -148,8 +153,8 @@ namespace Skoruba.IdentityServer4.STS.Identity
             services.AddDNTCaptcha(options =>
             {
                 // options.UseSessionStorageProvider(); // -> It doesn't rely on the server or client's times. Also it's the safest one.
-                // options.UseMemoryCacheStorageProvider(); // -> It relies on the server's times. It's safer than the CookieStorageProvider.
-                options.UseCookieStorageProvider(SameSiteMode.Strict /* If you are using CORS, set it to `None` */) // -> It relies on the server and client's times. It's ideal for scalability, because it doesn't save anything in the server's memory.
+                options.UseMemoryCacheStorageProvider() // -> It relies on the server's times. It's safer than the CookieStorageProvider.
+                // options.UseCookieStorageProvider(SameSiteMode.Strict /* If you are using CORS, set it to `None` */) // -> It relies on the server and client's times. It's ideal for scalability, because it doesn't save anything in the server's memory.
                                                                                                                     // .UseDistributedCacheStorageProvider(); // --> It's ideal for scalability using `services.AddStackExchangeRedisCache()` for instance.
                                                                                                                     // .UseDistributedSerializationProvider();
 
@@ -158,17 +163,19 @@ namespace Skoruba.IdentityServer4.STS.Identity
                 .UseCustomFont(Path.Combine(Environment.WebRootPath, "fonts", "IRANSans(FaNum)_Bold.ttf"))
                 .AbsoluteExpiration(minutes: 7)
                 .ShowThousandsSeparators(false)
-                .WithNoise(pixelsDensity: 25, linesCount: 3)
+                .WithNoise(pixelsDensity: 40, linesCount: 8)
                 .WithEncryptionKey("93122456-31A7-43C8-ADBC-A61A39D02479")
                 .InputNames(
                     new DNTCaptchaComponent
                     {
                         CaptchaHiddenInputName = "CaptchaText",
                         CaptchaHiddenTokenName = "CaptchaToken",
-                        CaptchaInputName = "CaptchaInputText"
+                        CaptchaInputName = "CaptchaUserInput"
                     })
                 .Identifier("captcha");
             });
+            var captchaConfiguration = Configuration.GetSection(nameof(CaptchaConfiguration));
+            services.Configure<CaptchaConfiguration>(captchaConfiguration);
         }
     }
 }

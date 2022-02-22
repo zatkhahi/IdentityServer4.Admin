@@ -39,9 +39,16 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                 Secure = true,
                 SameSite = SameSiteMode.Strict
             };
-            var fingerPrint = _context.Items.ContainsKey("CookieFingerprint") ? (string)_context.Items["CookieFingerprint"] : null;
-            if (fingerPrint != null)
-                _context.Response.Cookies.Append("__Secure-Fgp", fingerPrint, cookieOptions);
+            try
+            {
+                var fingerPrint = _context.Items.ContainsKey("CookieFingerprint") ? (string)_context.Items["CookieFingerprint"] : null;
+                if (fingerPrint != null)
+                    _context.Response.Cookies.Append("__Secure-Fgp", fingerPrint, cookieOptions);
+            }
+            catch
+            {
+                // this catch occurs when client connection is closed unexpectedly, httpcontext is disposed then
+            }
             return Task.FromResult(0);
         }
     }

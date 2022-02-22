@@ -538,5 +538,29 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                 }
             }
         }
+
+        public static IServiceCollection AddSTSApiCors(this IServiceCollection services, AdvancedConfiguration advancedConfiguration)
+        {
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    builder =>
+                    {
+                        if (advancedConfiguration.CorsAllowAnyOrigin)
+                        {
+                            builder.AllowAnyOrigin();
+                        }
+                        else
+                        {
+                            builder.WithOrigins(advancedConfiguration.CorsAllowOrigins);
+                        }
+
+                        builder.AllowAnyHeader();
+                        builder.AllowAnyMethod();
+                    });
+            });
+
+            return services;
+        }
     }
 }
