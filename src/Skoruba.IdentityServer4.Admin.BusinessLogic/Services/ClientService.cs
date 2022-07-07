@@ -131,7 +131,6 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services
                     ProtocolTypes = GetProtocolTypes(),
                     Id = 0
                 };
-
                 return clientDto;
             }
 
@@ -140,6 +139,7 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services
             client.RefreshTokenUsages = GetTokenUsage();
             client.ProtocolTypes = GetProtocolTypes();
 
+            
             PopulateClientRelations(client);
 
             return client;
@@ -181,6 +181,38 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services
             var originalClient = await GetClientAsync(client.Id);
 
             var updated = await ClientRepository.UpdateClientAsync(clientEntity);
+
+            var properties = await GetClientPropertiesByKeyAsync(client.Id, new List<string>() { "LoginCaptcha", "CookieFingerprint" });
+            var EnableLoginCaptchaProp = properties.ClientProperties.FirstOrDefault(s => s.Key == "LoginCaptcha");
+            if (EnableLoginCaptchaProp != null)
+            {
+                EnableLoginCaptchaProp.Value = client.EnableLoginCaptcha.ToString();
+                var clientPropertyEntity = EnableLoginCaptchaProp.ToEntity();
+                await ClientRepository.UpdateClientPropertyAsync(clientPropertyEntity);
+            }
+
+            else
+                await AddClientPropertyAsync(new ClientPropertiesDto()
+                {
+                    ClientId = client.Id,
+                    Key = "LoginCaptcha",
+                    Value = client.EnableLoginCaptcha.ToString()
+                });
+
+            var EnableTokenCookieFingerprintProp = properties.ClientProperties.FirstOrDefault(s => s.Key == "CookieFingerprint");
+            if (EnableTokenCookieFingerprintProp != null)
+            {
+                EnableTokenCookieFingerprintProp.Value = client.EnableTokenCookieFingerprint.ToString();
+                var clientPropertyEntity = EnableTokenCookieFingerprintProp.ToEntity();
+                await ClientRepository.UpdateClientPropertyAsync(clientPropertyEntity);
+            }
+            else
+                await AddClientPropertyAsync(new ClientPropertiesDto()
+                {
+                    ClientId = client.Id,
+                    Key = "CookieFingerprint",
+                    Value = client.EnableTokenCookieFingerprint.ToString()
+                });
 
             await AuditEventLogger.LogEventAsync(new ClientUpdatedEvent(originalClient, client));
 
@@ -237,6 +269,10 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services
             if (client == null) throw new UserFriendlyErrorPageException(string.Format(ClientServiceResources.ClientDoesNotExist().Description, clientId));
 
             var clientDto = client.ToModel();
+
+            var properties = await GetClientPropertiesByKeyAsync(clientId, new List<string>() { "LoginCaptcha", "CookieFingerprint" });
+            clientDto.EnableLoginCaptcha = properties.ClientProperties.Any(s => s.Key == "LoginCaptcha" && s.Value.ToLower() == "true");
+            clientDto.EnableTokenCookieFingerprint = !properties.ClientProperties.Any(s => s.Key == "CookieFingerprint" && s.Value.ToLower() == "false");
 
             await AuditEventLogger.LogEventAsync(new ClientRequestedEvent(clientDto));
 
@@ -414,6 +450,21 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services
             return clientPropertiesDto;
         }
 
+        public virtual async Task<ClientPropertiesDto> GetClientPropertiesByKeyAsync(int clientId, List<string> keys)
+        {
+            var clientInfo = await ClientRepository.GetClientIdAsync(clientId);
+            if (clientInfo.ClientId == null) throw new UserFriendlyErrorPageException(string.Format(ClientServiceResources.ClientDoesNotExist().Description, clientId));
+
+            var pagedList = await ClientRepository.GetClientPropertiesByKeyAsync(clientId, keys);
+            var clientPropertiesDto = pagedList.ToModel();
+            clientPropertiesDto.ClientId = clientId;
+            clientPropertiesDto.ClientName = ViewHelpers.GetClientName(clientInfo.ClientId, clientInfo.ClientName);
+
+            await AuditEventLogger.LogEventAsync(new ClientPropertiesRequestedEvent(clientPropertiesDto));
+
+            return clientPropertiesDto;
+        }
+
         public virtual async Task<ClientClaimsDto> GetClientClaimAsync(int clientClaimId)
         {
             var clientClaim = await ClientRepository.GetClientClaimAsync(clientClaimId);
@@ -448,6 +499,8 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services
             return clientPropertiesDto;
         }
 
+       
+
         public virtual async Task<int> AddClientClaimAsync(ClientClaimsDto clientClaim)
         {
             var clientClaimEntity = clientClaim.ToEntity();
@@ -469,6 +522,7 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services
 
             return saved;
         }
+
 
         public virtual async Task<int> DeleteClientClaimAsync(ClientClaimsDto clientClaim)
         {

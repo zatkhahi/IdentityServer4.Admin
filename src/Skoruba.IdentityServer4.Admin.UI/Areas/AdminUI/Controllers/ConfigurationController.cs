@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -56,6 +57,7 @@ namespace Skoruba.IdentityServer4.Admin.UI.Areas.AdminUI.Controllers
             var client = await _clientService.GetClientAsync(clientId);
             client = _clientService.BuildClientViewModel(client);
 
+            
             return View(client);
         }
 

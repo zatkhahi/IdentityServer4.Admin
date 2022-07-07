@@ -3,5 +3,8 @@
     public class AdvancedConfiguration
     {
         public string IssuerUri { get; set; }
+        public bool CorsAllowAnyOrigin { get; set; }
+
+        public string[] CorsAllowOrigins { get; set; }
     }
 }

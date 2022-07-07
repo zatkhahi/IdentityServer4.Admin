@@ -52,15 +52,6 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers.Api
             }
             return BadRequest(result);
         }
-
-        [HttpPost("Test")]
-        public IActionResult Test([FromServices] IDNTCaptchaValidatorService validatorService)
-        {
-            if (!validatorService.HasRequestValidCaptchaEntry(Language.English, DisplayMode.SumOfTwoNumbersToWords))
-            {
-                return BadRequest("Invalid captcha");
-            }
-            return Ok();
-        }
+       
     }
 }

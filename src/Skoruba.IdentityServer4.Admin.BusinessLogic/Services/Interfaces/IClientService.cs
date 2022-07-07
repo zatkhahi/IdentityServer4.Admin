@@ -54,6 +54,7 @@ namespace Skoruba.IdentityServer4.Admin.BusinessLogic.Services.Interfaces
         Task<ClientClaimsDto> GetClientClaimsAsync(int clientId, int page = 1, int pageSize = 10);
 
         Task<ClientPropertiesDto> GetClientPropertiesAsync(int clientId, int page = 1, int pageSize = 10);
+        Task<ClientPropertiesDto> GetClientPropertiesByKeyAsync(int clientId, List<string> keys);
 
         Task<ClientClaimsDto> GetClientClaimAsync(int clientClaimId);
 
