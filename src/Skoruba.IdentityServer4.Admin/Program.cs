@@ -34,6 +34,7 @@ namespace Skoruba.IdentityServer4.Admin
 
                 await ApplyDbMigrationsWithDataSeedAsync(args, configuration, host);
 
+                Log.Information("Migration applied successfully");
                 host.Run();
             }
             catch (Exception ex)
